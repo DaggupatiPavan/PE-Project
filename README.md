@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <h1>Project Title</h1>
+    <title>README - Project Title</title>
 </head>
-<body>
+
 
     <h1>Project Title</h1>
 
     <p>[Project Description]</p>
 
     <h2>Table of Contents</h2>
-
     <ul>
         <li><a href="#introduction">Introduction</a></li>
         <li><a href="#features">Features</a></li>
@@ -28,43 +28,46 @@
         <li><a href="#acknowledgments">Acknowledgments</a></li>
     </ul>
 
-    <h2>Introduction</h2>
+    <h2 id="introduction">Introduction</h2>
 
-    <p>[Provide a brief overview of your project. Explain the purpose and goals of the project, and mention any key technologies or frameworks used.]</p>
+    <p>[Provide a brief overview of your project. Explain the purpose and goals of the project, and mention any key
+        technologies or frameworks used.]</p>
 
-    <h2>Features</h2>
+    <h2 id="features">Features</h2>
 
     <ul>
         <li>Feature 1</li>
         <li>Feature 2</li>
-        <!-- Add more features as needed -->
+        <!-- Add more features if needed -->
     </ul>
 
-    <h2>Getting Started</h2>
+    <h2 id="getting-started">Getting Started</h2>
 
-    <h3>Prerequisites</h3>
+    <h3 id="prerequisites">Prerequisites</h3>
 
     <p>[List any software or dependencies that users need to have installed before they can use your project.]</p>
 
-    <h3>Installation</h3>
+    <h3 id="installation">Installation</h3>
 
     <p>[Provide step-by-step instructions on how to install and set up your project.]</p>
 
-    <h2>Usage</h2>
+    <h2 id="usage">Usage</h2>
 
     <p>[Explain how users can use your project. Provide examples or code snippets if necessary.]</p>
 
-    <h2>Contributing</h2>
+    <h2 id="contributing">Contributing</h2>
 
-    <p>[Explain how others can contribute to your project. Include information about the development environment setup, coding guidelines, and the process for submitting pull requests.]</p>
+    <p>[Explain how others can contribute to your project. Include information about the development environment setup,
+        coding guidelines, and the process for submitting pull requests.]</p>
 
-    <h2>License</h2>
+    <h2 id="license">License</h2>
 
-    <p>[Include information about the license under which your project is distributed. For example, you can use a standard open-source license like MIT or Apache 2.0.]</p>
+    <p>[Include information about the license under which your project is distributed. For example, you can use a
+        standard open-source license like MIT or Apache 2.0.]</p>
 
-    <h2>Acknowledgments</h2>
+    <h2 id="acknowledgments">Acknowledgments</h2>
 
-    <p>[Mention any individuals, organizations, or resources that you want to acknowledge for their contributions or inspiration.]</p>
+    <p>[Mention any individuals, organizations, or resources that you want to acknowledge for their contributions or
+        inspiration.]</p>
 
-</body>
 </html>
