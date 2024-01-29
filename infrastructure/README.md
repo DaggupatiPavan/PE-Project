@@ -49,12 +49,44 @@
 <!-- Repeat the same structure for Jenkins Pipeline -->
 
 <h3>1.1 Terraform View</h3>
-<!-- Repeat the same structure for Terraform View -->
+<table border="1">
+    <tr>
+        <th>Pipeline Names</th>
+        <th>GitLab Path</th>
+        <th>Remarks</th>
+    </tr>
+    <tr>
+        <td>aws_infra</td>
+        <td>path</td>
+        <td>Create a VPC part</td>
+    </tr>
+    <tr>
+        <td>aws_jump_box</td>
+        <td>path</td>
+        <td>Create a Public Instance (attach Public IP) (ansible playbooks)</td>
+    </tr>
+    <!-- Repeat similar rows for other Terraform views -->
+</table>
 
 <h3>1.2 Ansible View</h3>
-<!-- Repeat the same structure for Ansible View -->
-
-<!-- Repeat similar structures for other views -->
+<table border="1">
+    <tr>
+        <th>Pipeline Names</th>
+        <th>GitLab Path</th>
+        <th>Remarks</th>
+    </tr>
+    <tr>
+        <td>LifeCycle</td>
+        <td>path</td>
+        <td>Start, Stop, Modify Volume, ChangeType, addNodetoCluster- Ansible Playbooks path</td>
+    </tr>
+    <tr>
+        <td>Tools_deletion_container</td>
+        <td>path</td>
+        <td></td>
+    </tr>
+    <!-- Repeat similar rows for other Ansible views -->
+</table>
 
 <h2>Shared Libraries</h2>
 <p>In Jenkins, a shared library is a reusable set of code and functions that can be centrally defined and managed. It allows Jenkins pipelines to access shared functions, variables, and steps, promoting code reuse and maintainability across multiple projects. (Shared Libraries Path)</p>
