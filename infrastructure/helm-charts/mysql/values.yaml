@@ -1,0 +1,17 @@
+kubernetesClusterDomain: cluster.local
+xYZMysql:
+  mysql:
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      runAsUser: 1000
+    env:
+      mysqlRootPassword: root
+    image:
+      repository: mysql
+      tag: "5.7"
+  ports:
+  - port: 3306
+    protocol: TCP
+    targetPort: 0
+  replicas: 1
+  type: NodePort

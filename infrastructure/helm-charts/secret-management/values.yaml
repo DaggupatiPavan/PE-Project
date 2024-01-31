@@ -1,0 +1,16 @@
+application:
+  replicas: 1
+  namespace: default
+  vaultApplication:
+    imagePullPolicy: Always
+    imagePullSecrets: regcred
+    image:
+      repository: srinivas080801
+      imageName: secret-management
+      tag: latest
+kubernetesClusterDomain: cluster.local
+service:
+  ports:
+  - port: 8088
+    targetPort: 8088
+  type: NodePort

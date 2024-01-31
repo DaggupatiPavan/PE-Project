@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "template-service.fullname" . }}-deployment
+  namespace: {{ .Values.deployment.namespace }}
+  labels:
+  {{- include "template-service.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.deployment.replicas }}
+  selector:
+    matchLabels:
+      app: template
+    {{- include "template-service.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: template
+      {{- include "template-service.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - env:
+        - name: db_user
+          value: {{ quote .Values.deployment.templateService.env.dbUser }}
+        - name: port
+          value: {{ quote .Values.deployment.templateService.env.port }}
+        - name: db_host
+          value: {{ quote .Values.deployment.templateService.env.dbHost }}
+        - name: db_pass
+          value: {{ quote .Values.deployment.templateService.env.dbPass }}
+        - name: username
+          value: {{ quote .Values.deployment.templateService.env.username }}
+        - name: SANDBOX-ENV
+          value: {{ quote .Values.deployment.templateService.env.sandboxEnv }}
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        image: {{ .Values.deployment.templateService.image.repository }}/{{ .Values.deployment.templateService.image.imageName }}:{{ .Values.deployment.templateService.image.tag
+          | default .Chart.AppVersion }}
+        imagePullPolicy: {{ .Values.deployment.templateService.imagePullPolicy }}
+        name: template-service
+        ports:
+        - containerPort: 8000
+        resources: {}
+      imagePullSecrets:
+      - name: {{ .Values.deployment.templateService.imagePullSecrets }}

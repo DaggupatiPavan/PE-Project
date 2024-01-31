@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "sandbox-ms.fullname" . }}-deployment
+  namespace: {{ .Values.deployment.namespace }}
+  labels:
+  {{- include "sandbox-ms.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.deployment.replicas }}
+  selector:
+    matchLabels:
+      app: sandbox
+    {{- include "sandbox-ms.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: sandbox
+      {{- include "sandbox-ms.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - env:
+        - name: db_user
+          value: {{ quote .Values.deployment.sandbox.env.dbUser }}
+        - name: port
+          value: {{ quote .Values.deployment.sandbox.env.port }}
+        - name: db_host
+          value: {{ quote .Values.deployment.sandbox.env.dbHost }}
+        - name: db_pass
+          value: {{ quote .Values.deployment.sandbox.env.dbPass }}
+        - name: username
+          value: {{ quote .Values.deployment.sandbox.env.username }}
+        - name: instance_name
+          value: {{ quote .Values.deployment.sandbox.env.instanceName }}
+        - name: jaeger_host
+          value: {{ quote .Values.deployment.sandbox.env.jaegerHost }}
+        - name: jaeger_port
+          value: {{ quote .Values.deployment.sandbox.env.jaegerPort }}
+        - name: JENKINS_URL
+          value: {{ quote .Values.deployment.sandbox.env.jenkinsUrl }}
+        - name: JENKINS_USERNAME
+          value: {{ quote .Values.deployment.sandbox.env.jenkinsUsername }}
+        - name: JENKINS_PASSWORD
+          value: {{ quote .Values.deployment.sandbox.env.jenkinsPassword }}
+        - name: JENKINS_JOB_NAME_TERRAFORM
+          value: {{ quote .Values.deployment.sandbox.env.jenkinsJobNameTerraform }}
+        - name: JENKINS_API_TOKEN
+          value: {{ quote .Values.deployment.sandbox.env.jenkinsApiToken }}
+        - name: JENKINS_JOB_NAME_ANSIBLE
+          value: {{ quote .Values.deployment.sandbox.env.jenkinsJobNameAnsible }}
+        - name: JENKINS_JOB_NAME_DESTROY
+          value: {{ quote .Values.deployment.sandbox.env.jenkinsJobNameDestroy }}
+        - name: JENKINS_JOB_NAME_LIFECYCLE
+          value: {{ quote .Values.deployment.sandbox.env.jenkinsJobNameLifecycle }}
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        image: {{ .Values.deployment.sandbox.image.repository }}/{{ .Values.deployment.sandbox.image.imageName }}:{{ .Values.deployment.sandbox.image.tag
+          | default .Chart.AppVersion }}
+        imagePullPolicy: {{ .Values.deployment.sandbox.imagePullPolicy }}
+        name: sandbox
+        ports:
+        - containerPort: 8000
+        resources: {}
+      imagePullSecrets:
+      - name: {{ .Values.deployment.sandbox.imagePullSecrets }}
+

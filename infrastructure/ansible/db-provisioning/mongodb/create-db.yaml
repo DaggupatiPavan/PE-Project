@@ -1,0 +1,50 @@
+---
+- name: Create Mongodb Database, and Set Permissions
+  hosts: localhost
+  gather_facts: no
+
+  vars:
+    admin_username: "{{ admin_username }}"
+    admin_password: "{{ admin_password }}"
+    db_name: "{{ db_name }}"
+    db_ip: "{{ db_ip }}"
+    db_port: "{{ db_port }}"
+    hostname: "{{ hostname }}"
+
+- name: Deploy MongoDB Client Docker Container
+  hosts: localhost
+  tasks:
+    - name: Create db
+      command: >
+        sudo docker run --rm mongoclient/mongoclient mongo \
+        --host {{ db_ip }}:{{ db_port }} \
+        -u {{ admin_username }} \
+        -p "{{ admin_password }}" \
+        --authenticationDatabase admin \
+        --eval "db.createCollection('{{ db_name }}')"
+      register: result_create_db
+
+
+    - name: Print the create database result
+      debug:
+        var: result_create_db
+        
+    - name: Store database info 
+      uri:
+        url: "http://{{ restIP }}:{{ restPORT }}/platform/v1/database/saveDb"
+        method: POST
+        body_format: json
+        headers:
+          Content-Type: "application/json"
+          Host: "{{ hostname }}"
+        body: >
+          {
+            "serverName": "{{ serverName }}", 
+            "db_name": "{{ db_name }}",
+            "Owner": "{{ admin_username }}"
+          }
+        status_code: 200
+      when: result_create_db.rc == 0
+      register: post_req_DB
+    - debug:
+        var: post_req_DB

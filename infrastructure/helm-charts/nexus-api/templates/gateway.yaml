@@ -1,0 +1,17 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: {{ include "nexus-api.fullname" . }}-gateway
+  namespace: {{ .Values.apisDep.namespace }}
+  labels:
+  {{- include "nexus-api.labels" . | nindent 4 }}
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - hosts:
+    - nexus.example.com
+    port:
+      name: http
+      number: 80
+      protocol: HTTP

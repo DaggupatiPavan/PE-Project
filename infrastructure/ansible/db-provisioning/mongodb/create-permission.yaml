@@ -1,0 +1,51 @@
+- name: Add mongodb users and set permissions
+  hosts: localhost
+  gather_facts: no
+
+  vars:
+    restIP: "{{ restIP }}"
+    restPORT: "{{ restPORT }}"
+    hostname: "{{ hostname }}"
+    serverName: "{{ serverName }}"
+    admin_username: "{{ admin_username }}"
+    admin_password: "{{ admin_password }}"
+    postgres_ip: "{{ postgres_ip }}"
+    postgres_port: "{{ postgres_port }}"
+    username: "{{ username }}"
+    db_name: "{{ db_name }}"
+    priviledges: "{{ priviledges }}"
+  tasks:
+    - name: Set mongodb Permissions
+      command: >
+        sudo docker run --rm mongoclient/mongoclient mongo
+        --host {{ db_ip }}:{{ db_port }}
+        -u {{ admin_username }}
+        -p "{{ admin_password }}"
+        --authenticationDatabase admin
+        --eval "db.grantRolesToUser('{{ username }}', [{ role: '{{ priviledges }}', db: '{{ db_name }}' }])"
+      register: result_set_permissions
+
+    - name: Print the results for setting permissions
+      debug:
+        var: result_set_permissions
+
+    - name: Store database info 
+      uri:
+        url: "http://{{ restIP }}:{{ restPORT }}/platform/v1/database/savePermission"
+        method: POST
+        body_format: json
+        headers:
+          Content-Type: "application/json"
+          Host: "{{ hostname }}"
+        body: >
+          {
+            "serverName": "{{ serverName }}",
+            "username": "{{ username }}",
+            "db_name": "{{ db_name }}",
+            "priviledges": "{{ priviledges }}"
+          }
+      when: result_set_permissions.rc == 0
+      register: post_req_User
+
+    - debug:
+        var: post_req_User

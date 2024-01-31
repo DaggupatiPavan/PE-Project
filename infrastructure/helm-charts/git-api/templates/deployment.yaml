@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "mychart.fullname" . }}-dep
+  namespace: {{ .Values.dep.namespace }}
+  labels:
+  {{- include "mychart.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.dep.replicas }}
+  selector:
+    matchLabels:
+      app: gitlabapis
+    {{- include "mychart.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: gitlabapis
+      {{- include "mychart.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - env:
+        - name: gitlaburl
+          value: {{ quote .Values.dep.gitlab.env.gitlaburl }}
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        imagePullPolicy: {{ .Values.dep.gitlab.imagePullPolicy }}
+        image: {{ .Values.dep.gitlab.image.repository }}/{{ .Values.dep.gitlab.image.imageName }}:{{ .Values.dep.gitlab.image.tag
+          | default .Chart.AppVersion }}
+        name: gitlab
+        ports:
+        - containerPort: 8081
+        resources: {}
+      imagePullSecrets:
+      - name: {{ .Values.dep.gitlab.imagePullSecrets }}
+

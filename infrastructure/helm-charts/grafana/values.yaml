@@ -1,0 +1,12 @@
+kubernetesClusterDomain: cluster.local
+xYZGrafana:
+  grafana:
+    image:
+      repository: grafana/grafana
+      tag: latest
+    imagePullPolicy: IfNotPresent
+  ports:
+  - port: 3000
+    protocol: TCP
+    targetPort: 0
+  type: NodePort

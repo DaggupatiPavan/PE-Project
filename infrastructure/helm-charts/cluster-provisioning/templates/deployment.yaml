@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "mychart.fullname" . }}-cluster
+  namespace: {{ .Values.cluster.namespace }}
+  labels:
+  {{- include "mychart.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.cluster.replicas }}
+  selector:
+    matchLabels:
+      app: cluster
+      istio-injection: enabled
+    {{- include "mychart.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: cluster
+        istio-injection: enabled
+      {{- include "mychart.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - env:
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        envFrom:
+        - configMapRef:
+            name: cluster-config
+        image: {{ .Values.cluster.clusterContainer.image.repository }}/{{ .Values.cluster.clusterContainer.image.imageName }}:{{ .Values.cluster.clusterContainer.image.tag
+          | default .Chart.AppVersion }}
+        imagePullPolicy: {{ .Values.cluster.clusterContainer.imagePullPolicy }}
+        name: cluster-container
+        resources: {}
+      imagePullSecrets:
+      - name: {{ .Values.cluster.clusterContainer.imagePullSecrets }}

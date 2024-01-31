@@ -1,0 +1,36 @@
+deployment:
+  replicas: 1
+  namespace: NAMESPACE
+  sandbox:
+    env:
+      dbHost: 10.63.20.69
+      dbPass: Admin@123
+      dbUser: admin
+      instanceName: marvel-sandbox-test
+      jaegerHost: 10.63.20.69
+      jaegerPort: "31460"
+      jenkinsApiToken: oXzu/wHvqZUBKwytEqxyxd3K42AhM/JJOF2/jtYx
+      jenkinsJobNameAnsible: Tools_intallation
+      jenkinsJobNameDestroy: Destroy
+      jenkinsJobNameLifecycle: LifeCycle
+      jenkinsJobNameTerraform: aws_private_instance
+      jenkinsPassword: ayush@123
+      jenkinsUrl: http://10.63.20.41:8080/
+      jenkinsUsername: ayush
+      port: "32001"
+      username: ayush
+    image:
+      repository: 10.63.33.77:32003
+      imageName: cluster-provisioning
+      tag: 6
+
+    imagePullPolicy: Always
+    imagePullSecrets: SECRET1
+kubernetesClusterDomain: cluster.local
+service:
+  ports:
+  - nodePort: 30001
+    port: 80
+    protocol: TCP
+    targetPort: 8000
+  type: NodePort

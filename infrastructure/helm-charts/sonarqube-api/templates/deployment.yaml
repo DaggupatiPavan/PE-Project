@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "sonarqube-api.fullname" . }}-qubeapis-dep
+  namespace: {{ .Values.qubeapisDep.namespace }}
+  labels:
+  {{- include "sonarqube-api.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.qubeapisDep.replicas }}
+  selector:
+    matchLabels:
+      app: sonarqubeapis
+    {{- include "sonarqube-api.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: sonarqubeapis
+      {{- include "sonarqube-api.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - env:
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        imagePullPolicy: {{ .Values.qubeapisDep.sonarqube.imagePullPolicy }}
+        image: {{ .Values.qubeapisDep.sonarqube.image.repository }}/{{ .Values.qubeapisDep.sonarqube.image.imageName }}:{{ .Values.qubeapisDep.sonarqube.image.tag
+          | default .Chart.AppVersion }}
+        name: sonarqube
+        ports:
+        - containerPort: 8081
+        resources: {}
+      imagePullSecrets:
+      - name: {{ .Values.qubeapisDep.sonarqube.imagePullSecrets }}

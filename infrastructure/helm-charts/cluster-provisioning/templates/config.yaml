@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "mychart.fullname" . }}-config
+  namespace: {{ .Values.cluster.namespace }}
+  labels:
+  {{- include "mychart.labels" . | nindent 4 }}
+data:
+  database.password: {{ .Values.config.databasePassword | quote }}
+  database.url: {{ .Values.config.databaseUrl | quote }}
+  database.username: {{ .Values.config.databaseUsername | quote }}
+  fluentd.agent.host: {{ .Values.config.fluentdAgentHost | quote }}
+  fluentd.agent.port: {{ .Values.config.fluentdAgentPort | quote }}
+  jaeger.agent.host: {{ .Values.config.jaegerAgentHost | quote }}
+  jaeger.agent.port: {{ .Values.config.jaegerAgentPort | quote }}
+  jenkins.token: {{ .Values.config.jenkinsToken | quote }}
+  jenkins.url: {{ .Values.config.jenkinsUrl | quote }}
+  jenkins.user: {{ .Values.config.jenkinsUser | quote }}
+  platform.jumpbox.ip: {{ .Values.config.platformJumpboxIp | quote }}
+  platform.rest.ip: {{ .Values.config.platformRestIp | quote }}
+  platform.rest.port: {{ .Values.config.platformRestPort | quote }}
+  spring.application.name: {{ .Values.config.springApplicationName | quote }}
+  spring.jpa.hibernate.ddl-auto: {{ .Values.config.springJpaHibernateDdlAuto | quote
+    }}

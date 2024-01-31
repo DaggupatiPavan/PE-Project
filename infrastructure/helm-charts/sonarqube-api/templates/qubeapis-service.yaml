@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "sonarqube-api.fullname" . }}-qubeapis-service
+  namespace: {{ .Values.qubeapisDep.namespace }}
+  labels:
+  {{- include "sonarqube-api.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.qubeapisService.type }}
+  selector:
+    app: sonarqubeapis
+  {{- include "sonarqube-api.selectorLabels" . | nindent 4 }}
+  ports:
+        {{- .Values.qubeapisService.ports | toYaml | nindent 2 -}}
+        

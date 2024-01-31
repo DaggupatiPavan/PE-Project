@@ -1,0 +1,67 @@
+- name: Add PostgreSQL users and set permissions
+  hosts: localhost
+  gather_facts: no
+
+  vars:
+    restIP: "{{ restIP }}"
+    restPORT: "{{ restPORT }}"
+    hostname: "{{ hostname }}"
+    serverName: "{{ serverName }}"
+    admin_username: "{{ admin_username }}"
+    admin_password: "{{ admin_password }}"
+    db_ip: "{{ db_ip }}"
+    db_port: "{{ db_port }}"
+    username: "{{ username }}"
+    db_name: "{{ db_name }}"
+    priviledges: "{{ priviledges }}"
+  tasks:
+    - name: Install PostgreSQL client package
+      apt:
+        name: postgresql-client
+      become: yes
+
+    - name: Set PostgreSQL Permissions schema
+      shell: |
+        psql -h {{ db_ip }} -p {{ db_port }} -U {{ admin_username }} -d {{ db_name }} -c "
+        GRANT CONNECT ON DATABASE {{ db_name }} TO {{ username }};
+        GRANT CREATE ON SCHEMA public TO {{ username }};
+        GRANT {{ priviledges }} ON ALL TABLES IN SCHEMA public TO {{ username }};"
+      environment:
+        PGPASSWORD: "{{ admin_password }}"
+      register: result_set_schema
+
+    - name: Print the results for setting permissions
+      debug:
+        var: result_set_schema
+
+    - name: Set PostgreSQL Permissions
+      shell: |
+        psql -h {{ db_ip }} -p {{ db_port }} -U {{ admin_username }} -d {{ db_name }} -c "GRANT {{ priviledges }} ON ALL TABLES IN SCHEMA public TO {{ username }};"
+      environment:
+        PGPASSWORD: "{{ admin_password }}"
+      register: result_set_permissions
+
+    - name: Print the results for setting permissions
+      debug:
+        var: result_set_permissions
+
+    - name: Store database info 
+      uri:
+        url: "http://{{ restIP }}:{{ restPORT }}/platform/v1/database/savePermission"
+        method: POST
+        body_format: json
+        headers:
+          Content-Type: "application/json"
+          Host: "{{ hostname }}"
+        body: >
+          {
+            "serverName": "{{ serverName }}",
+            "username": "{{ username }}",
+            "db_name": "{{ db_name }}",
+            "priviledges": "{{ priviledges }}"
+          }
+      when: result_set_permissions is defined
+      register: post_req_User
+
+    - debug:
+        var: post_req_User

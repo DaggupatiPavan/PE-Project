@@ -1,0 +1,17 @@
+apisDep:
+  pipeline:
+    imagePullPolicy: Always
+    imagePullSecrets: regcred
+    image:
+      repository: saidurga21
+      imageName: pipelineapis
+      tag: latest
+  replicas: 1
+  namespace: default
+apisService:
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 8080
+  type: ClusterIP
+kubernetesClusterDomain: cluster.local

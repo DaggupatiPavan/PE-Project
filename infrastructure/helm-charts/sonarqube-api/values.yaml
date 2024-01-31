@@ -1,0 +1,17 @@
+kubernetesClusterDomain: cluster.local
+qubeapisDep:
+  replicas: 1
+  namespace: NAMESPACE
+  sonarqube:
+    imagePullPolicy: Always
+    imagePullSecrets: regcred
+    image:
+      repository: saidurga21/sonarqubeapis
+      imageName: saidurga21/sonarqubeapis
+      tag: latest
+qubeapisService:
+  ports:
+  - port: 8082
+    protocol: TCP
+    targetPort: 8082
+  type: ClusterIP

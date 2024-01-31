@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "efk.fullname" . }}-elasticsearch
+  namespace: {{ .Values.commonNamespace.namespace }}
+  labels:
+  {{- include "efk.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.elasticsearch.type }}
+  selector:
+    app: elasticsearch
+  {{- include "efk.selectorLabels" . | nindent 4 }}
+  ports:
+        {{- .Values.elasticsearch.ports | toYaml | nindent 2 -}}

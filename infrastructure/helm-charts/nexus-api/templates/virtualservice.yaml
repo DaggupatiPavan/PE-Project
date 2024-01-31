@@ -1,0 +1,24 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ include "nexus-api.fullname" . }}-virtualservice
+  namespace: {{ .Values.apisDep.namespace }}
+  labels:
+  {{- include "nexus-api.labels" . | nindent 4 }}
+spec:
+  gateways:
+  - nexus-gateway
+  hosts:
+  - nexus.example.com
+  http:
+  - match:
+    - uri:
+        prefix: /
+    rewrite:
+      authority: nexusapis-service.platformenv.svc.cluster.local:8000
+      uri: /
+    route:
+    - destination:
+        host: nexusapis-service.platformenv.svc.cluster.local
+        port:
+          number: 8000

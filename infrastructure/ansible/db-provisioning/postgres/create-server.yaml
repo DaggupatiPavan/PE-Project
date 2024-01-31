@@ -1,0 +1,137 @@
+---
+- name: Deploy PostgreSQL Helm Chart
+  hosts: localhost
+  vars:
+    restIP: "{{ restIP }}"
+    restPORT: "{{ restPORT }}"
+    hostname: "{{ hostname }}"
+    serverName: "{{ serverName }}"
+    serverMode: "{{ serverMode }}"
+    serverType: "{{ serverType }}"
+    helm_chart_name: "{{ helm_chart_name }}"
+    helm_chart_version: "{{ helm_chart_version }}"
+    helm_release_name: "{{ serverName }}-{{ ansible_date_time.epoch }}"
+    helm_release_namespace: "{{ helm_release_namespace }}"
+    admin_username: "{{ admin_username }}"
+    admin_password: "{{ admin_password }}"
+    number_of_replicas: "{{ number_of_replicas }}"
+    size: "{{ size }}"
+    database: "{{ serverType }}"
+    storageClass: "{{ storageClass }}"
+    accessMode: "{{ accessMode }}"
+  tasks:
+    - name: Check if Helm is installed
+      command: helm version --short
+      register: helm_version
+      ignore_errors: yes
+
+    - name: Check if namespace exists
+      command: kubectl create namespace {{ helm_release_namespace }}
+      register: ns_exists
+      ignore_errors: yes
+      
+    - name: Install Helm if not installed
+      command: curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+      when: helm_version.rc != 0
+
+    - name: Add Bitnami Helm repository
+      command: helm repo add bitnami https://charts.bitnami.com/bitnami
+      ignore_errors: yes
+
+    - name: Create PV & PVC file
+      shell: "sed -e 's/RELEASE_NAME/{{ helm_release_name }}/g' -e 's/STORAGE_CLASS/{{ storageClass }}/g' -e 's/SIZE/{{ size }}/g' -e 's/ACCESS_MODE/{{ accessMode }}/g' -e 's/RELEASE_SPACE/{{ helm_release_namespace }}/g' -e 's/DATABASE/{{ database }}/g' -e 's/SUBPATH/{{ helm_release_name }}/g' ../database-pv_pvc.yaml > pv-pvc.yaml"
+      
+    - name: Create PV & PVC
+      command: kubectl apply -f pv-pvc.yaml
+      register: pv_pvc_install
+      
+    - name: Deploy PostgreSQL Helm Chart 
+      command: >
+        helm install {{ helm_release_name }} {{ helm_chart_name }} -n {{ helm_release_namespace }}
+        --set global.postgresql.auth.postgresPassword={{ admin_password }}
+        --set readReplicas.replicaCount={{ number_of_replicas }}
+        --set primary.persistence.existingClaim={{ helm_release_name }}-pvc
+        --set volumePermissions.enabled=true
+        --set primary.service.type=NodePort
+      when: pv_pvc_install.rc == 0
+      register: helm_install
+    - debug:
+        var: helm_install.stdout_lines
+        
+    - name: Wait for all pods to be in a 'Running' state
+      command: kubectl wait --for=condition=Ready pod -l app.kubernetes.io/instance={{ helm_release_name }} -n {{ helm_release_namespace }} --timeout=300s
+      when: helm_install.rc == 0
+
+    - name: Print Kubernetes objects created by the Helm chart
+      command: kubectl get all -n {{ helm_release_namespace }} -l app.kubernetes.io/instance={{ helm_release_name }}
+      register: k8s_objects
+      when: helm_install.rc == 0
+    - debug:
+        var: k8s_objects.stdout_lines
+      
+    - name: Execute kubectl command to get InternalIP
+      shell: kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}'
+      register: cluster_ip_result
+    - debug:
+        var: cluster_ip_result.stdout
+    
+    - name: Execute kubectl command to get PostgreSQL ClusterIP
+      shell: kubectl get svc {{ helm_release_name }}-postgresql -o=jsonpath='{.spec.ports[0].nodePort}' -n {{ helm_release_namespace }}
+      register: cluster_port_result
+    - debug:
+        var: cluster_port_result.stdout
+        
+    - name: Store the results in global variables
+      set_fact:
+        global_cluster_ip: "{{ cluster_ip_result.stdout }}"
+        global_cluster_port: "{{ cluster_port_result.stdout }}"
+
+    - name: Store database info 
+      uri:
+        url: "http://{{ restIP }}:{{ restPORT }}/platform/v1/database/saveServer"
+        method: POST
+        body_format: json
+        headers:
+          Content-Type: "application/json"
+          Host: "{{ hostname }}"
+        body: >
+          {
+            "serverName": "{{ serverName }}",
+            "serverType": "{{ serverType }}",
+            "serverMode": "{{ serverMode }}",
+            "chart_name": "{{ helm_chart_name }}",
+            "chart_version": "{{ helm_chart_version }}",
+            "release_name": "{{ helm_release_name }}",
+            "release_namespace": "{{ helm_release_namespace }}",
+            "ip": "{{ global_cluster_ip }}",
+            "port": "{{ global_cluster_port }}",
+            "admin_username": "{{ admin_username }}",
+            "replica_count": "{{ number_of_replicas }}",
+            "storage_size": "{{ size }}"
+          }
+        status_code: 200
+      when: cluster_port_result.stdout is defined
+      register: post_req_DB
+    - debug:
+        var: post_req_DB
+
+    - name: Store Admin user info 
+      uri:
+        url: "http://{{ restIP }}:{{ restPORT }}/platform/v1/database/saveUser"
+        method: POST
+        body_format: json
+        headers:
+          Content-Type: "application/json"
+          Host: "{{ hostname }}"
+        body: >
+          {
+            "serverName": "{{ serverName }}",
+            "username": "{{ admin_username }}",
+            "password": "{{ admin_password }}"
+          }
+        status_code: 200
+      when: post_req_DB is defined
+      register: post_req_User
+    - debug:
+        var: post_req_User
+

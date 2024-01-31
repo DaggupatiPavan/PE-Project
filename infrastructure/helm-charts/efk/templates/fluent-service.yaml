@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "efk.fullname" . }}-fluent-service
+  namespace: {{ .Values.commonNamespace.namespace }}
+  labels:
+  {{- include "efk.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.fluentService.type }}
+  selector:
+    app: fluentd
+  {{- include "efk.selectorLabels" . | nindent 4 }}
+  ports:
+        {{- .Values.fluentService.ports | toYaml | nindent 2 -}}

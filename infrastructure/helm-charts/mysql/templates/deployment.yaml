@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "mysql.fullname" . }}-XYZ-mysql
+  labels:
+  {{- include "mysql.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.xYZMysql.replicas }}
+  selector:
+    matchLabels:
+      app: XYZ-mysql
+    {{- include "mysql.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: XYZ-mysql
+      {{- include "mysql.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: {{ quote .Values.xYZMysql.mysql.env.mysqlRootPassword }}
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        image: {{ .Values.xYZMysql.mysql.image.repository }}:{{ .Values.xYZMysql.mysql.image.tag
+          | default .Chart.AppVersion }}
+        name: mysql
+        ports:
+        - containerPort: 3306
+          name: mysql
+        resources: {}
+        securityContext: {{- toYaml .Values.xYZMysql.mysql.containerSecurityContext | nindent
+          10 }}
+        volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: mysql-persistent-storage
+      volumes:
+      - name: mysql-persistent-storage
+        persistentVolumeClaim:
+          claimName: pvcName

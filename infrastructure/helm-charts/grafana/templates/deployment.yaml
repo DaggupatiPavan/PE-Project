@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "grafana.fullname" . }}-XYZ-grafana
+  labels:
+    app: XYZ-grafana
+  {{- include "grafana.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: XYZ-grafana
+    {{- include "grafana.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: XYZ-grafana
+      {{- include "grafana.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - env:
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        image: {{ .Values.xYZGrafana.grafana.image.repository }}:{{ .Values.xYZGrafana.grafana.image.tag
+          | default .Chart.AppVersion }}
+        imagePullPolicy: {{ .Values.xYZGrafana.grafana.imagePullPolicy }}
+        name: grafana
+        ports:
+        - containerPort: 3000
+          name: http-grafana
+          protocol: TCP
+        resources: {}
+        volumeMounts:
+        - mountPath: /var/lib/grafana
+          name: grafana-pv
+      securityContext:
+        fsGroup: 472
+        supplementalGroups:
+        - 0
+      volumes:
+      - name: grafana-pv
+        persistentVolumeClaim:
+          claimName: pvcName

@@ -1,0 +1,17 @@
+app:
+  efkApp:
+    imagePullSecrets: regcred
+    image:
+      repository: 10.63.20.43:32003
+      imageName: platform_logging
+      tag: latest
+    imagePullPolicy: Always
+  replicas: 1
+  namespace: default
+kubernetesClusterDomain: cluster.local
+service:
+  ports:
+  - port: 8080
+    targetPort: 8080
+    nodePort: 31597
+  type: NodePort

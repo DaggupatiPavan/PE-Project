@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "secret-management.fullname" . }}-application
+  namespace: {{ .Values.application.namespace }}
+  labels:
+  {{- include "secret-management.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.application.replicas }}
+  selector:
+    matchLabels:
+      app: vault-application
+    {{- include "secret-management.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: vault-application
+      {{- include "secret-management.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - env:
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        imagePullPolicy: {{ .Values.application.vaultApplication.imagePullPolicy }}
+        image: {{ .Values.application.vaultApplication.image.repository }}/{{ .Values.application.vaultApplication.image.imageName }}:{{ .Values.application.vaultApplication.image.tag
+          | default .Chart.AppVersion }}
+        name: vault-application
+        ports:
+        - containerPort: 8088
+        resources: {}
+      imagePullSecrets:
+      - name: {{ .Values.application.vaultApplication.imagePullSecrets }}  
+

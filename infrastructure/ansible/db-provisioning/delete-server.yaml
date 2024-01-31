@@ -1,0 +1,25 @@
+---
+- name: Deploy Mongodb Helm Chart
+  hosts: localhost
+  vars:
+    restIP: "{{ restIP }}"
+    restPORT: "{{ restPORT }}"
+    helm_release_name: "{{ helm_release_name }}"
+    helm_release_namespace: "{{ helm_release_namespace }}"
+    
+  tasks:
+    - name: Delete Helm Chart
+      command: helm uninstall {{ helm_release_name }} -n {{ helm_release_namespace }}
+      register: helm_uninstall
+    - debug:
+        var: helm_uninstall.stdout_lines
+        
+    - name: Delete PVC
+      command: kubectl delete pvc {{ helm_release_name }}-pvc -n {{ helm_release_namespace }}
+      register: pvc_delete
+      when: helm_uninstall.rc == 0
+
+    - name: Delete PV
+      command: kubectl delete pv {{ helm_release_name }}-pv -n {{ helm_release_namespace }}
+      register: pv_delete
+      when: pvc_delete.rc == 0

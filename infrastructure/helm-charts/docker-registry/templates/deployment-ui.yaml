@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "docker-registry.fullname" . }}-ui
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
+  labels:
+    app: {{ template "docker-registry.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: 1  # You can adjust the number of replicas as needed
+  selector:
+    matchLabels:
+      app:  {{ template "docker-registry.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "docker-registry.name" . }}
+    spec:
+      containers:
+      - name: ui
+        image: joxit/docker-registry-ui:main
+        ports:
+        - containerPort: 80
+        env:
+        - name: SINGLE_REGISTRY
+          value: "true"
+        - name: REGISTRY_TITLE
+          value: "Docker Registry UI"
+        - name: DELETE_IMAGES
+          value: "true"
+        - name: SHOW_CONTENT_DIGEST
+          value: "true"
+        - name: NGINX_PROXY_PASS_URL
+          value: http://{{ template "docker-registry.fullname" . }}:5000
+        - name: SHOW_CATALOG_NB_TAGS
+          value: "true"
+        - name: CATALOG_MIN_BRANCHES
+          value: "1"
+        - name: CATALOG_MAX_BRANCHES
+          value: "1"
+        - name: TAGLIST_PAGE_SIZE
+          value: "100"
+        - name: REGISTRY_SECURED
+          value: "false"
+        - name: CATALOG_ELEMENTS_LIMIT
+          value: "1000"
+

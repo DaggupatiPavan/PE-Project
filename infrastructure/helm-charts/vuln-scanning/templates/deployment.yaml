@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "vulnerability-scanning-ms.fullname" . }}-scanning
+  namespace: {{ .Values.scanning.namespace }}
+  labels:
+  {{- include "vulnerability-scanning-ms.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.scanning.replicas }}
+  selector:
+    matchLabels:
+      app: scanning
+    {{- include "vulnerability-scanning-ms.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: scanning
+      {{- include "vulnerability-scanning-ms.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - env:
+        - name: spring.application.name
+          value: {{ quote .Values.scanning.scanningContainer.env.springApplicationName
+            }}
+        - name: jenkins.url
+          value: {{ quote .Values.scanning.scanningContainer.env.jenkinsUrl }}
+        - name: jenkins.token
+          value: {{ quote .Values.scanning.scanningContainer.env.jenkinsToken }}
+        - name: jenkins.user
+          value: {{ quote .Values.scanning.scanningContainer.env.jenkinsUser }}
+        - name: platform.rest.ip
+          value: {{ quote .Values.scanning.scanningContainer.env.platformRestIp }}
+        - name: platform.rest.port
+          value: {{ quote .Values.scanning.scanningContainer.env.platformRestPort }}
+        - name: database.url
+          value: {{ quote .Values.scanning.scanningContainer.env.databaseUrl }}
+        - name: database.username
+          value: {{ quote .Values.scanning.scanningContainer.env.databaseUsername }}
+        - name: database.password
+          value: {{ quote .Values.scanning.scanningContainer.env.databasePassword }}
+        - name: jaeger.agent.host
+          value: {{ quote .Values.scanning.scanningContainer.env.jaegerAgentHost }}
+        - name: jaeger.agent.port
+          value: {{ quote .Values.scanning.scanningContainer.env.jaegerAgentPort }}
+        - name: fluentd.agent.host
+          value: {{ quote .Values.scanning.scanningContainer.env.fluentdAgentHost }}
+        - name: fluentd.agent.port
+          value: {{ quote .Values.scanning.scanningContainer.env.fluentdAgentPort }}
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        image: {{ .Values.scanning.scanningContainer.image.repository }}/{{ .Values.scanning.scanningContainer.image.imageName }}:{{ .Values.scanning.scanningContainer.image.tag
+          | default .Chart.AppVersion }}
+        imagePullPolicy: {{ .Values.scanning.scanningContainer.imagePullPolicy }}
+        name: scanning-container
+        resources: {}
+      imagePullSecrets:
+      - name: {{ .Values.scanning.scanningContainer.imagePullSecrets }}

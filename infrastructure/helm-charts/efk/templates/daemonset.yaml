@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "efk.fullname" . }}-fluentd
+  namespace: {{ .Values.commonNamespace.namespace }}
+  labels:
+  {{- include "efk.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: fluentd
+    {{- include "efk.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: fluentd
+      {{- include "efk.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - env:
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        image: {{ .Values.fluentd.fluentd.image.repository }}:{{ .Values.fluentd.fluentd.image.tag
+          | default .Chart.AppVersion }}
+        name: fluentd
+        resources: {}
+        volumeMounts:
+        - mountPath: /fluentd/etc/
+          name: config-volume
+      volumes:
+      - configMap:
+          name: {{ include "efk.fullname" . }}-fluentd-config
+        name: config-volume

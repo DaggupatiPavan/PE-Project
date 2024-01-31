@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "efk-ms.fullname" . }}-app
+  namespace: {{ .Values.app.namespace }}
+  labels:
+  {{- include "efk-ms.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.app.replicas }}
+  selector:
+    matchLabels:
+      app: efk-app
+    {{- include "efk-ms.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: efk-app
+      {{- include "efk-ms.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - env:
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        imagePullPolicy: {{ .Values.app.efkApp.imagePullPolicy }}
+        image: {{ .Values.app.efkApp.image.repository }}/{{ .Values.app.efkApp.image.imageName }}:{{ .Values.app.efkApp.image.tag | default .Chart.AppVersion }}
+        name: efk-app
+        ports:
+        - containerPort: 8080
+        resources: {}
+      imagePullSecrets:
+      - name: {{ .Values.app.efkApp.imagePullSecrets }} 

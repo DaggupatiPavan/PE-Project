@@ -1,0 +1,24 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ include "secret-management.fullname" . }}-virtualservice
+  namespace: {{ .Values.application.namespace }}
+  labels:
+  {{- include "secret-management.labels" . | nindent 4 }}
+spec:
+  gateways:
+  - vault-gateway
+  hosts:
+  - vault.example.com
+  http:
+  - match:
+    - uri:
+        prefix: /
+    rewrite:
+      authority: vault-service.vault.svc.cluster.local:8088
+      uri: /
+    route:
+    - destination:
+        host: vault-service.vault.svc.cluster.local
+        port:
+          number: 8088

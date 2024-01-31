@@ -1,0 +1,20 @@
+dep:
+  gitlab:
+    env:
+      gitlaburl: http://10.63.20.59:32471
+    imagePullPolicy: Always
+    imagePullSecrets: regcred
+    image:
+      repository: 10.63.20.43:32003
+      imageName: gitapi
+      tag: latest
+  replicas: 1
+  namespace: NAMESPACE
+kubernetesClusterDomain: cluster.local
+service:
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 8080
+  type: NodePort 
+

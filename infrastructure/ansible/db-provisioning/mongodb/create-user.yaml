@@ -1,0 +1,51 @@
+---
+- name: Add MongoDB users and set permissions
+  hosts: localhost
+  gather_facts: no
+
+  vars:
+    restIP: "{{ restIP }}"
+    restPORT: "{{ restPORT }}"
+    hostname: "{{ hostname }}"
+    serverName: "{{ serverName }}"
+    admin_username: "{{ admin_username }}"
+    admin_password: "{{ admin_password }}"
+    db_ip: "{{ db_ip }}"
+    db_port: "{{ db_port }}"
+    username: "{{ username }}"
+    password: "{{ password }}"
+
+  tasks:
+    - name: Create MongoDB user
+      command: >
+        sudo docker run --rm mongoclient/mongoclient mongo \
+        --host {{ db_ip }}:{{ db_port }} \
+        -u {{ admin_username }} \
+        -p "{{ admin_password }}" \
+        --authenticationDatabase admin \
+        --eval "db.createUser({user: '{{ username }}', pwd: '{{ password }}', roles: ['read']})"
+      register: result_create_user
+
+    - name: Print the create user result
+      debug:
+        var: result_create_user
+
+    - name: Store database info
+      uri:
+        url: "http://{{ restIP }}:{{ restPORT }}/platform/v1/database/saveUser"
+        method: POST
+        body_format: json
+        headers:
+          Content-Type: "application/json"
+          Host: "{{ hostname }}"
+        body: >
+          {
+            "serverName": "{{ serverName }}",
+            "username": "{{ username }}",
+            "password": "{{ password }}"
+          }
+      when: result_create_user.rc == 0
+      register: post_req_User
+
+    - debug:
+        var: post_req_User

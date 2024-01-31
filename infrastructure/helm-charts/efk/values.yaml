@@ -1,0 +1,58 @@
+commonNamespace:
+  namespace: 'efk'
+elasticsearch:
+  elasticsearch:
+    env:
+      discoveryType: single-node
+      xpackSecurityEnabled: "false"
+    image:
+      repository: docker.elastic.co/elasticsearch/elasticsearch
+      tag: 8.10.2
+    resources:
+      limits:
+        memory: 2Gi
+  ports:
+  - port: 9200
+    targetPort: 9200
+    nodePort: 30379
+  replicas: 1
+  type: NodePort
+fluentService:
+  ports:
+  - port: 24224
+    protocol: TCP
+    targetPort: 24224
+  type: NodePort
+fluentd:
+  fluentd:
+    image:
+      repository: fluent/fluentd-kubernetes-daemonset
+      tag: v1.16-debian-elasticsearch8-1
+fluentdConfig:
+  fluentConf: |-
+    # Your custom Fluentd configuration here
+    <source>
+      @type forward
+      port 24224
+    </source>
+    <match ** >
+    #  @type stdout
+     @type elasticsearch
+     host efk-elasticsearch
+     port 9200
+     logstash_format true
+     flush_interval 5s
+    </match>
+kibana:
+  kibana:
+    env:
+      elasticsearchUrl: http://efk-elasticsearch:9200
+    image:
+      repository: docker.elastic.co/kibana/kibana
+      tag: 8.10.2
+  ports:
+  - port: 5601
+    targetPort: 5601
+  replicas: 1
+  type: NodePort
+kubernetesClusterDomain: cluster.local

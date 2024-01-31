@@ -1,0 +1,24 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ include "efk.fullname" . }}-efk-virtualservice
+  namespace: {{ .Values.commonNamespace.namespace }}
+  labels:
+  {{- include "efk.labels" . | nindent 4 }}
+spec:
+  gateways:
+  - efk-efk-gateway
+  hosts:
+  - efk.example.com
+  http:
+  - match:
+    - uri:
+        prefix: /
+    rewrite:
+      authority: efk-ms-service.efk.svc.cluster.local:8080
+      uri: /
+    route:
+    - destination:
+        host: efk-ms-service.efk.svc.cluster.local
+        port:
+          number: 8080

@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "db-provisioning-ms.fullname" . }}-dbprovision
+  namespace: {{ .Values.dbprovision.namespace }}
+  labels:
+  {{- include "db-provisioning-ms.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.dbprovision.replicas }}
+  selector:
+    matchLabels:
+      app: dbprovision
+    {{- include "db-provisioning-ms.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: dbprovision
+      {{- include "db-provisioning-ms.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - env:
+        - name: spring.application.name
+          value: {{ quote .Values.dbprovision.dbprovisionContainer.env.springApplicationName
+            }}
+        - name: jenkins.url
+          value: {{ quote .Values.dbprovision.dbprovisionContainer.env.jenkinsUrl }}
+        - name: jenkins.token
+          value: {{ quote .Values.dbprovision.dbprovisionContainer.env.jenkinsToken }}
+        - name: jenkins.user
+          value: {{ quote .Values.dbprovision.dbprovisionContainer.env.jenkinsUser }}
+        - name: platform.rest.ip
+          value: {{ quote .Values.dbprovision.dbprovisionContainer.env.platformRestIp }}
+        - name: platform.rest.port
+          value: {{ quote .Values.dbprovision.dbprovisionContainer.env.platformRestPort
+            }}
+        - name: database.url
+          value: {{ quote .Values.dbprovision.dbprovisionContainer.env.databaseUrl }}
+        - name: database.username
+          value: {{ quote .Values.dbprovision.dbprovisionContainer.env.databaseUsername
+            }}
+        - name: database.password
+          value: {{ quote .Values.dbprovision.dbprovisionContainer.env.databasePassword
+            }}
+        - name: jaeger.agent.host
+          value: {{ quote .Values.dbprovision.dbprovisionContainer.env.jaegerAgentHost
+            }}
+        - name: jaeger.agent.port
+          value: {{ quote .Values.dbprovision.dbprovisionContainer.env.jaegerAgentPort
+            }}
+        - name: fluentd.agent.host
+          value: {{ quote .Values.dbprovision.dbprovisionContainer.env.fluentdAgentHost
+            }}
+        - name: fluentd.agent.port
+          value: {{ quote .Values.dbprovision.dbprovisionContainer.env.fluentdAgentPort
+            }}
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        image: {{ .Values.dbprovision.dbprovisionContainer.image.repository }}/{{ .Values.dbprovision.dbprovisionContainer.image.imageName}}:{{ .Values.dbprovision.dbprovisionContainer.image.tag
+          | default .Chart.AppVersion }}
+        imagePullPolicy: {{ .Values.dbprovision.dbprovisionContainer.imagePullPolicy }}
+        name: dbprovision-container
+        resources: {}
+      imagePullSecrets:
+      - name: {{ .Values.dbprovision.dbprovisionContainer.imagePullSecrets }}

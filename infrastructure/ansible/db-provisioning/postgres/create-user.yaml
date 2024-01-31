@@ -1,0 +1,51 @@
+- name: Add PostgreSQL users and set permissions
+  hosts: localhost
+  gather_facts: no
+
+  vars:
+    restIP: "{{ restIP }}"
+    restPORT: "{{ restPORT }}"
+    hostname: "{{ hostname }}"
+    serverName: "{{ serverName }}"
+    admin_username: "{{ admin_username }}"
+    admin_password: "{{ admin_password }}"
+    db_ip: "{{ db_ip }}"
+    db_port: "{{ db_port }}"
+    username: "{{ username }}"
+    password: "{{ password }}"
+  tasks:
+    - name: Install PostgreSQL client package
+      apt:
+        name: postgresql-client
+      become: yes
+
+    - name: Create PostgreSQL users
+      shell: |
+        psql -h {{ db_ip }} -p {{ db_port }} -U {{ admin_username }} -c "CREATE ROLE {{ username }} WITH LOGIN PASSWORD '{{ password }}';"
+      environment:
+        PGPASSWORD: "{{ admin_password }}"
+      register: result_create_user
+      
+    - name: Print the create user result
+      debug:
+        var: result_create_user
+
+    - name: Store database info 
+      uri:
+        url: "http://{{ restIP }}:{{ restPORT }}/platform/v1/database/saveUser"
+        method: POST
+        body_format: json
+        headers:
+          Content-Type: "application/json"
+          Host: "{{ hostname }}"
+        body: >
+          {
+            "serverName": "{{ serverName }}",
+            "username": "{{ username }}",
+            "password": "{{ password }}",
+          }
+      when: result_create_user.rc == 0
+      register: post_req_User
+
+    - debug:
+        var: post_req_User

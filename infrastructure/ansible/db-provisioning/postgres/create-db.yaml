@@ -1,0 +1,50 @@
+---
+- name: Create PostgreSQL Database, and Set Permissions
+  hosts: localhost
+  gather_facts: no
+
+  vars:
+    admin_username: "{{ admin_username }}"
+    admin_password: "{{ admin_password }}"
+    db_name: "{{ db_name }}"
+    db_ip: "{{ db_ip }}"
+    db_port: "{{ db_port }}"
+    hostname: "{{ hostname }}"
+    
+  tasks:
+    - name: Install PostgreSQL client package
+      apt:
+        name: postgresql-client
+      become: yes
+
+    - name: Create PostgreSQL Database
+      shell: |
+        psql -h {{ db_ip }} -p {{ db_port }} -U {{ admin_username }} -c "CREATE DATABASE {{ db_name }};"
+      environment:
+        PGPASSWORD: "{{ admin_password }}"
+      register: result_create_db
+      ignore_errors: yes
+
+    - name: Print the create database result
+      debug:
+        var: result_create_db
+        
+    - name: Store database info 
+      uri:
+        url: "http://{{ restIP }}:{{ restPORT }}/platform/v1/database/saveDb"
+        method: POST
+        body_format: json
+        headers:
+          Content-Type: "application/json"
+          Host: "{{ hostname }}"
+        body: >
+          {
+            "serverName": "{{ serverName }}", 
+            "db_name": "{{ db_name }}",
+            "Owner": "{{ admin_username }}"
+          }
+        status_code: 200
+      when: result_create_db is defined
+      register: post_req_DB
+    - debug:
+        var: post_req_DB

@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "efk.fullname" . }}-elasticsearch
+  namespace: {{ .Values.commonNamespace.namespace }}
+  labels:
+  {{- include "efk.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.elasticsearch.replicas }}
+  selector:
+    matchLabels:
+      app: elasticsearch
+    {{- include "efk.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: elasticsearch
+      {{- include "efk.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - env:
+        - name: discovery.type
+          value: {{ quote .Values.elasticsearch.elasticsearch.env.discoveryType }}
+        - name: xpack.security.enabled
+          value: {{ quote .Values.elasticsearch.elasticsearch.env.xpackSecurityEnabled
+            }}
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        image: {{ .Values.elasticsearch.elasticsearch.image.repository }}:{{ .Values.elasticsearch.elasticsearch.image.tag
+          | default .Chart.AppVersion }}
+        name: elasticsearch
+        ports:
+        - containerPort: 9200
+        resources: {{- toYaml .Values.elasticsearch.elasticsearch.resources | nindent 10
+          }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "efk.fullname" . }}-kibana
+  namespace: {{ .Values.commonNamespace.namespace }}
+  labels:
+    app: kibana
+  {{- include "efk.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.kibana.replicas }}
+  selector:
+    matchLabels:
+      app: kibana
+    {{- include "efk.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: kibana
+      {{- include "efk.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - env:
+        - name: ELASTICSEARCH_URL
+          value: {{ quote .Values.kibana.kibana.env.elasticsearchUrl }}
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        image: {{ .Values.kibana.kibana.image.repository }}:{{ .Values.kibana.kibana.image.tag
+          | default .Chart.AppVersion }}
+        name: kibana
+        ports:
+        - containerPort: 5601
+        resources: {}

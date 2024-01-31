@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "nexus-api.fullname" . }}-apis-dep
+  namespace: {{ .Values.apisDep.namespace }}
+  labels:
+  {{- include "nexus-api.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.apisDep.replicas }}
+  selector:
+    matchLabels:
+      app: nexusapis
+    {{- include "nexus-api.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: nexusapis
+      {{- include "nexus-api.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - env:
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        imagePullPolicy: {{ .Values.apisDep.nexus.imagePullPolicy }}
+        image: {{ .Values.apisDep.nexus.image.repository }}/{{ .Values.apisDep.nexus.image.imageName }}:{{ .Values.apisDep.nexus.image.tag | default .Chart.AppVersion }}
+        name: nexus
+        ports:
+        - containerPort: 8000
+        resources: {}
+      imagePullSecrets:
+      - name: {{ .Values.apisDep.nexus.imagePullSecrets }}

@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "mysql.fullname" . }}-XYZ-mysql
+  labels:
+  {{- include "mysql.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.xYZMysql.type }}
+  selector:
+    app: XYZ-mysql
+  {{- include "mysql.selectorLabels" . | nindent 4 }}
+  ports:
+	{{- .Values.xYZMysql.ports | toYaml | nindent 2 -}}

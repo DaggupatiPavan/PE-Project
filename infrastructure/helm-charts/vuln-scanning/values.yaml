@@ -1,0 +1,32 @@
+kubernetesClusterDomain: cluster.local
+scanning:
+  replicas: 1
+  namespace: NAMESPACE
+  scanningContainer:
+    env:
+      databasePassword: ""
+      databaseUrl: ""
+      databaseUsername: ""
+      fluentdAgentHost: ""
+      fluentdAgentPort: ""
+      jaegerAgentHost: ""
+      jaegerAgentPort: ""
+      jenkinsToken: ""
+      jenkinsUrl: ""
+      jenkinsUser: ""
+      platformRestIp: ""
+      platformRestPort: ""
+      springApplicationName: ""
+    image:
+      repository: 10.63.33.77:32003
+      imageName: cluster-provisioning
+      tag: 6
+
+    imagePullPolicy: Always
+    imagePullSecrets: SECRET1
+service:
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 8080
+  type: ClusterIP

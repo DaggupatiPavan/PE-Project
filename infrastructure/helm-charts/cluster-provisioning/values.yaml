@@ -1,0 +1,34 @@
+cluster:
+  clusterContainer:
+    image:
+      repository: 10.63.20.43:32003
+      imageName: cluster-provisioning
+      tag: 6
+    imagePullPolicy: Always
+    imagePullSecrets: SECRET1
+  replicas: 1
+  namespace: NAMESPACE
+config:
+  databasePassword: Admin@123
+  databaseUrl: jdbc:postgresql://10.63.20.43:32001/platformengg
+  databaseUsername: admin
+  fluentdAgentHost: 10.63.20.43
+  fluentdAgentPort: "30007"
+  jaegerAgentHost: 10.63.20.43
+  jaegerAgentPort: "30007"
+  jenkinsToken: some_value
+  jenkinsUrl: http://10.63.20.41:8080
+  jenkinsUser: yogesh
+  platformJumpboxIp: some_value
+  platformRestIp: aa7eabfa05ed24fc3ad6d2c4007e805c-1204085443.us-east-1.elb.amazonaws.com
+  platformRestPort: 80/clusterProvisioning
+  springApplicationName: cluster
+  springJpaHibernateDdlAuto: update
+
+kubernetesClusterDomain: cluster.local
+service:
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 8080
+  type: ClusterIP

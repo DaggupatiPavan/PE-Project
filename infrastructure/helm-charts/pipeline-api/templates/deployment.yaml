@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "pipeline-api.fullname" . }}-apis-dep
+  namespace: {{ .Values.apisDep.namespace }}
+  labels:
+  {{- include "pipeline-api.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.apisDep.replicas }}
+  selector:
+    matchLabels:
+      app: pipelineapis
+    {{- include "pipeline-api.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: pipelineapis
+      {{- include "pipeline-api.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - env:
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        imagePullPolicy: {{ .Values.apisDep.pipeline.imagePullPolicy }}
+        image: {{ .Values.apisDep.pipeline.image.repository }}/{{ .Values.apisDep.pipeline.image.imageName }}:{{ .Values.apisDep.pipeline.image.tag
+          | default .Chart.AppVersion }}
+        name: pipeline
+        ports:
+        - containerPort: 8080
+        resources: {}
+      imagePullSecrets:
+      - name: {{ .Values.apisDep.pipeline.imagePullSecrets }}
